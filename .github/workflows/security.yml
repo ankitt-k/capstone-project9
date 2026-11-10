@@ -1,0 +1,53 @@
+name: Security Gates
+
+on: [push]
+
+jobs:
+  bandit-scan:
+    name: "Gate 1 - Bandit SAST"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install Bandit
+        run: pip install bandit
+      - name: Run Bandit (fail on High severity)
+        run: bandit -r . -ll
+
+  safety-scan:
+    name: "Gate 2 - Safety Dependency Scan"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install Safety
+        run: pip install safety
+      - name: Run Safety check
+        run: safety check -r requirements.txt
+
+  gitleaks-scan:
+    name: "Gate 3 - Gitleaks Secret Detection"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  prompt-injection-scan:
+    name: "Gate 4 - Custom Prompt Injection Scanner"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run inject_scanner.py
+        run: python3 inject_scanner.py
