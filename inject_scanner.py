@@ -13,6 +13,7 @@ INJECTION_PHRASES = [
 ]
 
 SELF_FILE = "inject_scanner.py"
+EXCLUDED_FILES = [SELF_FILE, "validate.py"]  # validate.py defines these phrases as detection patterns, not actual prompts
 
 def scan_file(filepath):
     findings = []
@@ -36,7 +37,7 @@ def scan_file(filepath):
     return findings
 
 def main():
-    py_files = [f for f in glob.glob("**/*.py", recursive=True) if f != SELF_FILE]
+    py_files = [f for f in glob.glob("**/*.py", recursive=True) if f not in EXCLUDED_FILES]
     all_findings = []
     for f in py_files:
         all_findings.extend(scan_file(f))
